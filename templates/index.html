@@ -4,58 +4,138 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Self-Correcting Agent Loop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
 </head>
 <body>
+    <div class="atmosphere" aria-hidden="true">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
+        <div class="orb orb-c"></div>
+        <div class="grid-fade"></div>
+        <div class="noise"></div>
+    </div>
+
     <main class="page-shell">
-        <section class="hero">
-            <div>
-                <span class="eyebrow">LangGraph · DigitalOcean Gradient™ AI · Serverless Inference</span>
-                <h1>Self-Correcting Multi-Agent System</h1>
-                <p class="hero-copy">
-                    A Writer → Reviewer → Reviser workflow powered by DigitalOcean Serverless Inference that improves an answer until the reviewer accepts it.
-                </p>
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-name">AskMeAnything</span>
             </div>
-            <div class="loop-badge">↻ AI agent loop</div>
+            <div class="topbar-meta">
+                <span class="live-dot" aria-hidden="true"></span>
+                <span>Live on App Platform</span>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="hero-copy-block">
+                <p class="eyebrow">LangGraph · DigitalOcean Gradient™ AI · Serverless Inference</p>
+                <h1>
+                    Self-correcting
+                    <span class="title-accent">multi-agent</span>
+                    loop
+                </h1>
+                <p class="hero-copy">
+                    Writer drafts. Reviewer judges. Reviser improves.
+                    The cycle continues until the answer earns a pass — powered by DigitalOcean Serverless Inference.
+                </p>
+                <div class="hero-chips">
+                    <span class="chip">Writer → Reviewer → Reviser</span>
+                    <span class="chip chip-signal">Auto-revise until PASS</span>
+                </div>
+            </div>
+
+            <div class="orbit-stage" aria-hidden="true">
+                <div class="orbit-ring ring-outer"></div>
+                <div class="orbit-ring ring-mid"></div>
+                <div class="orbit-core">
+                    <span class="core-glyph">↻</span>
+                    <span class="core-label">agent loop</span>
+                </div>
+                <div class="orbit-node node-writer"><span>W</span><small>Writer</small></div>
+                <div class="orbit-node node-reviewer"><span>R</span><small>Reviewer</small></div>
+                <div class="orbit-node node-reviser"><span>V</span><small>Reviser</small></div>
+            </div>
         </section>
 
         <section class="inference-strip" aria-label="Inference configuration">
-            <div>
-                <span>Inference</span>
+            <div class="meta-card">
+                <span class="meta-label">Inference</span>
                 <strong>{{ runtime.provider }}</strong>
             </div>
             {% if runtime.router_enabled %}
-            <div>
-                <span>Routing</span>
-                <strong>router:{{ runtime.router }}</strong>
+            <div class="meta-card">
+                <span class="meta-label">Routing</span>
+                <strong class="mono">router:{{ runtime.router }}</strong>
             </div>
             {% else %}
-            <div>
-                <span>Model</span>
-                <strong>{{ runtime.writer_model }}</strong>
+            <div class="meta-card">
+                <span class="meta-label">Model</span>
+                <strong class="mono">{{ runtime.writer_model }}</strong>
             </div>
             {% endif %}
+            <div class="meta-card">
+                <span class="meta-label">Max revisions</span>
+                <strong class="mono">{{ runtime.max_revisions }}</strong>
+            </div>
         </section>
 
         <section class="workflow" aria-label="Agent workflow">
-            <div class="workflow-node"><span>1</span><strong>Writer</strong><small>Create</small></div>
-            <div class="arrow">→</div>
-            <div class="workflow-node"><span>2</span><strong>Reviewer</strong><small>Evaluate</small></div>
-            <div class="arrow">→</div>
-            <div class="workflow-node"><span>3</span><strong>Reviser</strong><small>Improve</small></div>
-            <div class="loop-arrow">↩ Reviewer</div>
+            <article class="workflow-node role-writer">
+                <div class="node-index">01</div>
+                <div>
+                    <strong>Writer</strong>
+                    <small>Create the first draft</small>
+                </div>
+            </article>
+            <div class="flow-connector" aria-hidden="true"><span></span></div>
+            <article class="workflow-node role-reviewer">
+                <div class="node-index">02</div>
+                <div>
+                    <strong>Reviewer</strong>
+                    <small>Score against rules</small>
+                </div>
+            </article>
+            <div class="flow-connector" aria-hidden="true"><span></span></div>
+            <article class="workflow-node role-reviser">
+                <div class="node-index">03</div>
+                <div>
+                    <strong>Reviser</strong>
+                    <small>Apply feedback</small>
+                </div>
+            </article>
+            <div class="flow-loop" aria-hidden="true">↩ loops to Reviewer</div>
         </section>
 
-        <section class="input-card">
-            <label for="topic">What should the agents explain?</label>
-            <div class="input-row">
-                <input id="topic" type="text" value="{{ example_topic }}" maxlength="300" autocomplete="off">
-                <button id="runButton" type="button">Run Agent Loop</button>
+        <section class="console-card">
+            <div class="console-head">
+                <label for="topic">What should the agents explain?</label>
+                <span class="console-tag">prompt console</span>
             </div>
-            <p class="hint">Try: “Explain recursion in programming” or “What is RAG?”</p>
+            <div class="input-row">
+                <input id="topic" type="text" value="{{ example_topic }}" maxlength="300" autocomplete="off" placeholder="Ask anything…">
+                <button id="runButton" type="button">
+                    <span class="btn-label">Run Agent Loop</span>
+                    <span class="btn-shine" aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="hint-row">
+                <p class="hint">Try “Explain recursion in programming” or “What is RAG?”</p>
+                <div class="hint-pills">
+                    <button type="button" class="pill" data-topic="What is an AI agent?">AI agents</button>
+                    <button type="button" class="pill" data-topic="Explain recursion in programming">Recursion</button>
+                    <button type="button" class="pill" data-topic="What is RAG?">RAG</button>
+                </div>
+            </div>
         </section>
 
-        <section id="status" class="status hidden" aria-live="polite"></section>
+        <section id="status" class="status hidden" aria-live="polite">
+            <span class="status-spinner" aria-hidden="true"></span>
+            <span class="status-text"></span>
+        </section>
 
         <section id="results" class="results hidden">
             <div class="section-heading">
@@ -77,6 +157,12 @@
                 <div id="finalAnswer" class="answer"></div>
             </div>
         </section>
+
+        <footer class="site-footer">
+            <span>Self-correcting multi-agent demo</span>
+            <span class="footer-sep">·</span>
+            <span>DigitalOcean Gradient™ AI</span>
+        </footer>
     </main>
     <script src="{{ url_for('static', path='/app.js') }}"></script>
 </body>

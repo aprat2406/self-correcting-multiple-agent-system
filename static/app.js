@@ -1,6 +1,8 @@
 const topicInput = document.getElementById("topic");
 const runButton = document.getElementById("runButton");
+const btnLabel = runButton.querySelector(".btn-label");
 const statusBox = document.getElementById("status");
+const statusText = statusBox.querySelector(".status-text");
 const results = document.getElementById("results");
 const timeline = document.getElementById("timeline");
 const finalAnswer = document.getElementById("finalAnswer");
@@ -13,14 +15,26 @@ function escapeHtml(value = "") {
     return div.innerHTML;
 }
 
+function setButtonLabel(text) {
+    btnLabel.textContent = text;
+}
+
 function setStatus(message, isError = false) {
-    statusBox.textContent = message;
+    statusText.textContent = message;
     statusBox.classList.remove("hidden", "error");
     if (isError) statusBox.classList.add("error");
 }
 
+function agentGlyph(agent) {
+    if (agent === "writer") return "W";
+    if (agent === "reviewer") return "R";
+    if (agent === "reviser") return "V";
+    return String(agent).slice(0, 1).toUpperCase();
+}
+
 function renderEvent(event, index) {
-    const isReview = event.agent === "reviewer";
+    const agent = event.agent || "agent";
+    const isReview = agent === "reviewer";
     const decision = event.decision || "";
     const revisionText = event.revision_count > 0 ? `Revision ${event.revision_count}` : "Initial draft";
     const modelText = event.model ? ` · ${event.model}` : "";
@@ -38,12 +52,12 @@ function renderEvent(event, index) {
         : "";
 
     return `
-        <article class="event">
-            <div class="event-dot">${index + 1}</div>
+        <article class="event" data-agent="${escapeHtml(agent)}" style="--i:${index}">
+            <div class="event-dot" title="${escapeHtml(agent)}">${agentGlyph(agent)}</div>
             <div class="event-card">
                 <div class="event-top">
                     <div>
-                        <div class="event-name">${escapeHtml(event.agent)} Agent</div>
+                        <div class="event-name">${escapeHtml(agent)} Agent</div>
                         <div class="event-meta">${escapeHtml(revisionText + modelText)}</div>
                     </div>
                     ${decisionBadge}
@@ -62,7 +76,7 @@ async function runAgentLoop() {
     }
 
     runButton.disabled = true;
-    runButton.textContent = "Agents are working…";
+    setButtonLabel("Agents are working…");
     results.classList.add("hidden");
     setStatus("Running Writer → Reviewer → Reviser through DigitalOcean Serverless Inference…");
 
@@ -93,11 +107,19 @@ async function runAgentLoop() {
         setStatus(error.message, true);
     } finally {
         runButton.disabled = false;
-        runButton.textContent = "Run Agent Loop";
+        setButtonLabel("Run Agent Loop");
     }
 }
 
 runButton.addEventListener("click", runAgentLoop);
+
 topicInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") runAgentLoop();
+});
+
+document.querySelectorAll(".pill[data-topic]").forEach((pill) => {
+    pill.addEventListener("click", () => {
+        topicInput.value = pill.dataset.topic;
+        topicInput.focus();
+    });
 });
